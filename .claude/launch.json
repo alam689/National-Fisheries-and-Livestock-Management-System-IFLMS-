@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "nflms-app"],
       "port": 5173
+    },
+    {
+      "name": "nflms-pages-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--prefix", "nflms-app", "--", "--port", "4173", "--strictPort"],
+      "port": 4173
     }
   ]
 }

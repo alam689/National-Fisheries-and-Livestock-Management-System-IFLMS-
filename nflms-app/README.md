@@ -11,6 +11,21 @@ npm run dev        # http://localhost:5173
 npm run build      # production bundle in dist/
 ```
 
+## Deploy (GitHub Pages)
+
+Pushing to `main` builds the app and publishes it via `.github/workflows/deploy-pages.yml`:
+
+<https://alam689.github.io/National-Fisheries-and-Livestock-Management-System-IFLMS-/>
+
+One-time setup: in the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+Notes:
+
+- `base` in `vite.config.ts` is the repository sub-path; the workflow re-passes it as `--base` from the repo name so a rename cannot silently break asset URLs. To host at a domain root instead, build with `npm run build -- --base=/`.
+- `BrowserRouter` uses `basename={import.meta.env.BASE_URL}`, so routes and links resolve under that sub-path.
+- Pages serves static files with no rewrite rules, so the workflow copies `index.html` to `404.html`. That lets a deep link such as `/medicine` reach the client router instead of a 404.
+- Pages cannot run `server/ai-proxy.mjs`. On the published site the AI Assistant stays in offline mode unless you point it at a separately hosted proxy URL.
+
 Sign in with any password. Demo accounts are listed under the sign-in form; for example:
 
 | Workspace | Email | Role |

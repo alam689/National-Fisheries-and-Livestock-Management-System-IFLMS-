@@ -9,7 +9,7 @@ if (import.meta.env.DEV) (window as unknown as { __nflms: typeof useStore }).__n
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
