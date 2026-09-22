@@ -11,7 +11,10 @@ name: Build and publish site
 on:
   push:
     branches: [main]
-    # Do not react to this workflow's own publish commits.
+    # Do not react to this workflow's own publish commits. Note that path
+    # filtering also means a push that changes no files (an empty commit)
+    # never matches, so it cannot be used to trigger a publish by hand;
+    # use the Actions tab's "Run workflow" button instead.
     paths-ignore:
       - 'index.html'
       - '404.html'
