@@ -33,6 +33,14 @@ jobs:
 
       - run: npm ci
 
+      - name: Enable and configure Pages
+        # enablement: true turns Pages on (build_type: workflow) if it is not
+        # already, so no manual Settings -> Pages step is needed. Requires the
+        # pages: write permission granted above.
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - name: Build
         # Serve from https://<user>.github.io/<repo>/ — derived from the repo name so a
         # rename does not silently break asset URLs.
