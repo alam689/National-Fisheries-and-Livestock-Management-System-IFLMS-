@@ -1,0 +1,72 @@
+name: Build and publish site
+
+# GitHub Pages for this repository is set to "Deploy from a branch" (main, root),
+# so the site is whatever sits at the repository root. This workflow builds
+# nflms-app and commits that build output to the root.
+#
+# Cleaner alternative: set Settings -> Pages -> Source to "GitHub Actions" and
+# deploy the bundle as an artifact instead, which keeps compiled files out of
+# git. See nflms-app/README.md.
+
+on:
+  push:
+    branches: [main]
+    # Do not react to this workflow's own publish commits.
+    paths-ignore:
+      - 'index.html'
+      - '404.html'
+      - 'assets/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-site
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: nflms-app/package-lock.json
+
+      - run: npm ci
+        working-directory: nflms-app
+
+      - name: Build
+        working-directory: nflms-app
+        # A project site is served from https://<user>.github.io/<repo>/, so assets
+        # must resolve under that sub-path. Taken from the repo name so a rename
+        # cannot silently break asset URLs.
+        run: npm run build -- --base=/${{ github.event.repository.name }}/
+
+      - name: Copy build output to the repository root
+        run: |
+          # Drop the previous publish first; asset filenames are content-hashed,
+          # so copying over the top would accumulate stale bundles forever.
+          rm -rf assets
+          rm -f index.html 404.html
+          cp -r nflms-app/dist/. .
+          # Pages has no rewrite rules. Serving index.html as the 404 page lets a
+          # deep link such as /medicine reach the client router instead of a 404.
+          cp index.html 404.html
+
+      - name: Commit the published site
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Site unchanged; nothing to publish.'
+            exit 0
+          fi
+          # [skip ci] keeps this push from triggering another run.
+          git commit -m 'Publish site [skip ci]'
+          git push

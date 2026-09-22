@@ -13,18 +13,29 @@ npm run build      # production bundle in dist/
 
 ## Deploy (GitHub Pages)
 
-Pushing to `main` builds the app and publishes it via `.github/workflows/deploy-pages.yml`:
+Live at <https://alam689.github.io/National-Fisheries-and-Livestock-Management-System-IFLMS-/>
 
-<https://alam689.github.io/National-Fisheries-and-Livestock-Management-System-IFLMS-/>
+Pages for this repository is set to **Deploy from a branch** (`main`, root folder),
+so the published site is whatever sits at the repository root. Since the app has to
+be compiled first, `.github/workflows/publish-site.yml` builds `nflms-app` on every
+push to `main` and commits the build output (`index.html`, `404.html`, `assets/`)
+back to the root. The publish commit carries `[skip ci]` so it does not trigger
+another run.
 
-One-time setup: in the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+That means compiled files are tracked in git, and each deploy adds a commit. To
+avoid both, switch **Settings -> Pages -> Source** to **GitHub Actions**, then change
+the workflow to upload `nflms-app/dist` with `actions/upload-pages-artifact` and
+deploy it with `actions/deploy-pages` instead of committing. Note that the Actions
+token cannot enable Pages itself, because creating a Pages site needs repository
+admin rights, so that Source change has to be made by hand.
 
 Notes:
 
-- `base` in `vite.config.ts` is the repository sub-path; the workflow re-passes it as `--base` from the repo name so a rename cannot silently break asset URLs. To host at a domain root instead, build with `npm run build -- --base=/`.
+- `base` in `vite.config.ts` is the repository sub-path, because a project site is served from `https://<user>.github.io/<repo>/`. The workflow re-passes it as `--base` from the repo name so a rename cannot silently break asset URLs. To host at a domain root instead, build with `npm run build -- --base=/`.
 - `BrowserRouter` uses `basename={import.meta.env.BASE_URL}`, so routes and links resolve under that sub-path.
 - Pages serves static files with no rewrite rules, so the workflow copies `index.html` to `404.html`. That lets a deep link such as `/medicine` reach the client router instead of a 404.
 - Pages cannot run `server/ai-proxy.mjs`. On the published site the AI Assistant stays in offline mode unless you point it at a separately hosted proxy URL.
+- The repository is public, so both the source and the published demo data are world-readable.
 
 Sign in with any password. Demo accounts are listed under the sign-in form; for example:
 
